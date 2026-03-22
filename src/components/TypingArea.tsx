@@ -4,7 +4,6 @@ import { useCallback, useRef, useState, useMemo } from "react";
 import { transliterate, transliterateWord } from "@/lib/transliteration";
 import { getSuggestions, debounce } from "@/lib/suggestions";
 import { isPreetiText, convertPreetiToUnicode } from "@/lib/preetiConverter";
-import nepalify from "nepalify";
 
 interface Props {
   activeFont: string;
