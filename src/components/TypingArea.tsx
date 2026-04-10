@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState, useMemo } from "react";
+import nepalify from "nepalify"; // ✅ FIXED IMPORT
+
 import { transliterate, transliterateWord } from "@/lib/transliteration";
 import { getSuggestions, debounce } from "@/lib/suggestions";
 import { isPreetiText, convertPreetiToUnicode } from "@/lib/preetiConverter";
@@ -29,9 +31,7 @@ export default function TypingArea({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mirrorRef = useRef<HTMLDivElement>(null);
 
-  // ─────────────────────────────────────────────
   // Cursor position
-  // ─────────────────────────────────────────────
   const getCursorPos = useCallback((ta: HTMLTextAreaElement, idx: number) => {
     const mirror = mirrorRef.current;
     if (!mirror) return { top: 32, left: 0 };
@@ -65,9 +65,7 @@ export default function TypingArea({
     };
   }, []);
 
-  // ─────────────────────────────────────────────
   // Apply suggestion
-  // ─────────────────────────────────────────────
   const applySuggestion = useCallback(
     (nepaliWord: string) => {
       const ta = textareaRef.current;
@@ -101,37 +99,33 @@ export default function TypingArea({
     [input, onRomanChange, onUnicodeChange, onSuggestionsChange]
   );
 
-  // ─────────────────────────────────────────────
   // Debounced suggestions
-  // ─────────────────────────────────────────────
- const fetchSuggestions = useMemo(() => {
-  return debounce(
-    (word: string, cursor: number, ta: HTMLTextAreaElement) => {
-      if (!word) {
-        setShowDropdown(false);
-        return;
-      }
+  const fetchSuggestions = useMemo(() => {
+    return debounce(
+      (word: string, cursor: number, ta: HTMLTextAreaElement) => {
+        if (!word) {
+          setShowDropdown(false);
+          return;
+        }
 
-      const suggs = getSuggestions(word);
+        const suggs = getSuggestions(word);
 
-      setSuggestions(suggs);
-      onSuggestionsChange(suggs);
-      setSelectedIndex(0);
+        setSuggestions(suggs);
+        onSuggestionsChange(suggs);
+        setSelectedIndex(0);
 
-      if (suggs.length > 0) {
-        setDropdownPos(getCursorPos(ta, cursor));
-        setShowDropdown(true);
-      } else {
-        setShowDropdown(false);
-      }
-    },
-    120
-  );
-}, [getCursorPos, onSuggestionsChange]);
+        if (suggs.length > 0) {
+          setDropdownPos(getCursorPos(ta, cursor));
+          setShowDropdown(true);
+        } else {
+          setShowDropdown(false);
+        }
+      },
+      120
+    );
+  }, [getCursorPos, onSuggestionsChange]);
 
-  // ─────────────────────────────────────────────
-  // Handle typing (🔥 HYBRID ENGINE HERE)
-  // ─────────────────────────────────────────────
+  // 🔥 MAIN INPUT HANDLER
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
@@ -140,12 +134,16 @@ export default function TypingArea({
       setInput(value);
       onRomanChange(value);
 
-      // ✅ PRIMARY ENGINE
+      // Primary engine
       let converted = transliterate(value);
 
-      // ✅ FALLBACK (nepalify)
-      if (!converted || converted === value) {
-        converted = nepalify.format(value, { layout: "romanized" });
+      // ✅ Safe fallback
+      try {
+        if (!converted || converted === value) {
+          converted = nepalify.format(value, { layout: "romanized" });
+        }
+      } catch (err) {
+        console.warn("Nepalify failed:", err);
       }
 
       setOutput(converted);
@@ -163,9 +161,7 @@ export default function TypingArea({
     [onRomanChange, onUnicodeChange, fetchSuggestions]
   );
 
-  // ─────────────────────────────────────────────
   // Keyboard navigation
-  // ─────────────────────────────────────────────
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (!showDropdown || suggestions.length === 0) return;
@@ -189,9 +185,7 @@ export default function TypingArea({
     [showDropdown, suggestions, selectedIndex, applySuggestion]
   );
 
-  // ─────────────────────────────────────────────
   // Paste handler
-  // ─────────────────────────────────────────────
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
       const pasted = e.clipboardData.getData("text");
@@ -208,7 +202,6 @@ export default function TypingArea({
     [output, onUnicodeChange]
   );
 
-  // ─────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-2">
       <textarea
@@ -243,10 +236,19 @@ export default function TypingArea({
       {currentWord && (
         <p className="text-sm text-gray-500">
           {currentWord} →{" "}
-          {
-            transliterateWord(currentWord) ||
-            nepalify.format(currentWord, { layout: "romanized" })
-          }
+          {(() => {
+            let preview = transliterateWord(currentWord);
+
+            try {
+              if (!preview || preview === currentWord) {
+                preview = nepalify.format(currentWord, {
+                  layout: "romanized",
+                });
+              }
+            } catch {}
+
+            return preview;
+          })()}
         </p>
       )}
 
