@@ -24,8 +24,7 @@ const PREETI_TO_UNICODE: Record<string, string> = {
   "z": "ज्ञ", "x": "ं", "c": "च", "v": "व", "b": "ब",
   "n": "न", "m": "म", ",": "ˈ", ".": "।",
 
-  // IMPORTANT (Preeti specific)
-  "3": "इ",
+ 
 };
 
 // ---------------------------------------------
