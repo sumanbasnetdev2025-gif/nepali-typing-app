@@ -1,6 +1,4 @@
-// src/lib/wordmap.ts
-// Direct Roman → Nepali for the 500 most common words
-// This is what makes the difference between 60% and 90% accuracy
+
 
 export const WORD_MAP: Record<string, string[]> = {
   // Greetings
@@ -56,7 +54,6 @@ export const WORD_MAP: Record<string, string[]> = {
   "tapai":       ["तपाईं"],
   "tapaai":      ["तपाईं"],
   "tapain":      ["तपाईं"],
-  "ma":          ["म"],
   "hami":        ["हामी"],
   "haami":       ["हामी"],
   "timi":        ["तिमी"],
